@@ -1,0 +1,51 @@
+body {
+    background-color: #111;
+    color: white;
+}
+
+
+.top-menu {
+    background-color: #000;
+    padding: 15px 0;
+}
+
+.menu-link {
+    text-decoration: none;
+    color: #ccc;
+    margin-right: 20px;
+}
+
+.menu-link:hover {
+    color: white;
+}
+
+.menu-icon {
+    color: #ccc;
+    font-size: 18px;
+}
+
+.menu-icon:hover {
+    color: white;
+}
+
+.section-title {
+    border-left: 4px solid red;
+    padding-left: 10px;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.movie-card img {
+    width: 100%;
+    border-radius: 6px;
+    transition: 0.3s;
+}
+
+.movie-card img:hover {
+    transform: scale(1.05);
+}
+
+#loadMore {
+  margin: 2rem 0;
+}
