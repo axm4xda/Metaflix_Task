@@ -27,7 +27,6 @@ fetch("https://api.tvmaze.com/shows")
     filteredFilms = data;
     loadGenres();
     LoadMore();
-    loadGenresCustom();
   });
 
 function LoadMore() {
