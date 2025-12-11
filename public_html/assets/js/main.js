@@ -5,15 +5,20 @@ const notFound = document.getElementById("notFound");
 const searchToggle = document.getElementById("searchToggle");
 const searchInput = document.getElementById("Search");
 const genreFilter = document.getElementById("genreFilter");
+const filterClose = document.getElementById("filterClose");
 
 let filmsDatas = [];
 let filteredFilms = [];
 let count = 0;
 let limit = 12;
 
-loadMoreButton.addEventListener("click", function () {
-  LoadMore();
-});
+if (loadMoreButton) {
+  loadMoreButton.addEventListener("click", function () {
+    LoadMore();
+  });
+} else {
+  console.warn("loadMoreButton not found in DOM");
+}
 
 fetch("https://api.tvmaze.com/shows")
   .then((res) => res.json())
@@ -41,7 +46,7 @@ function LoadMore() {
         <div class="col-6 col-md-3">
           <a href="./Details.html?id=${movie.id}" style="text-decoration:none; color:inherit;">
             <div class="movie-card">
-              <img src="${img}" class="w-75" style="border-radius:6px;">
+              <img src="${img}" class="w-100" style="border-radius:6px;">
               <h6 class="mt-2">${movie.name}</h6>
               <small class="text-secondary">${genres}</small>
               <hr>
@@ -59,48 +64,59 @@ function LoadMore() {
   count++;
 }
 
-SearchInput.addEventListener("input", function (e) {
-  const searchText = e.target.value.toLowerCase().trim();
+if (SearchInput) {
+  SearchInput.addEventListener("input", function (e) {
+    const searchText = e.target.value.toLowerCase().trim();
 
-  if (searchText === "") {
-    filteredFilms = filmsDatas;
-  } else {
-    filteredFilms = filmsDatas.filter((film) =>
-      film.name.toLowerCase().includes(searchText)
-    );
-  }
+    if (searchText === "") {
+      filteredFilms = filmsDatas;
+    } else {
+      filteredFilms = filmsDatas.filter((film) =>
+        film.name.toLowerCase().includes(searchText)
+      );
+    }
 
-  if (filteredFilms.length === 0) {
+    if (filteredFilms.length === 0) {
+      filmsContainer.innerHTML = "";
+      loadMoreButton.style.display = "none";
+      notFound.classList.remove("d-none");
+      return;
+    }
+
+    notFound.classList.add("d-none");
+    loadMoreButton.style.display = "block";
+
+    count = 0;
     filmsContainer.innerHTML = "";
-    loadMoreButton.style.display = "none";
-    notFound.classList.remove("d-none");
-    return;
-  }
+    LoadMore();
+  });
+} else {
+  console.warn("Search input (#Search) not found in DOM");
+}
 
-  notFound.classList.add("d-none");
-  loadMoreButton.style.display = "block";
+if (searchToggle && searchInput) {
+  searchToggle.addEventListener("click", () => {
+    searchInput.classList.toggle("open");
 
-  count = 0;
-  filmsContainer.innerHTML = "";
-  LoadMore();
-});
+    if (searchInput.classList.contains("open")) {
+      searchInput.focus();
+    } else {
+      searchInput.value = "";
+      searchInput.dispatchEvent(new Event("input"));
+    }
+  });
+} else {
+  if (!searchToggle) console.warn("searchToggle not found in DOM");
+  if (!searchInput) console.warn("searchInput not found in DOM");
+}
 
-searchToggle.addEventListener("click", () => {
-  searchInput.classList.toggle("open");
-
-  if (searchInput.classList.contains("open")) {
-    searchInput.focus();
-  } else {
-    searchInput.value = "";
-    searchInput.dispatchEvent(new Event("input"));
-  }
-});
-
-searchInput.addEventListener("blur", () => {
-  if (searchInput.value.trim() === "") {
-    searchInput.classList.remove("open");
-  }
-});
+if (searchInput) {
+  searchInput.addEventListener("blur", () => {
+    if (searchInput.value.trim() === "") {
+      searchInput.classList.remove("open");
+    }
+  });
+}
 
 function loadGenres() {
   let allGenres = new Set();
@@ -111,97 +127,49 @@ function loadGenres() {
     }
   });
 
+  if (!genreFilter) {
+    console.warn("genreFilter select not found in DOM — skipping loadGenres");
+    return;
+  }
+
   allGenres.forEach((genre) => {
     genreFilter.innerHTML += `<option value="${genre}">${genre}</option>`;
   });
 }
 
-genreFilter.addEventListener("change", function () {
-  const selected = genreFilter.value;
+if (genreFilter) {
+  genreFilter.addEventListener("change", function () {
+    const selected = genreFilter.value;
 
-  if (selected === "all") {
-    filteredFilms = filmsDatas;
-  } else {
-    filteredFilms = filmsDatas.filter((film) => film.genres.includes(selected));
-  }
+    if (selected === "all") {
+      filteredFilms = filmsDatas;
+    } else {
+      filteredFilms = filmsDatas.filter((film) =>
+        film.genres.includes(selected)
+      );
+    }
 
-  const searchText = searchInput.value.toLowerCase().trim();
-  if (searchText !== "") {
-    filteredFilms = filteredFilms.filter((film) =>
-      film.name.toLowerCase().includes(searchText)
-    );
-  }
+    const searchText = searchInput.value.toLowerCase().trim();
+    if (searchText !== "") {
+      filteredFilms = filteredFilms.filter((film) =>
+        film.name.toLowerCase().includes(searchText)
+      );
+    }
 
-  if (filteredFilms.length === 0) {
+    if (filteredFilms.length === 0) {
+      filmsContainer.innerHTML = "";
+      loadMoreButton.style.display = "none";
+      notFound.classList.remove("d-none");
+      return;
+    }
+
+    notFound.classList.add("d-none");
+    loadMoreButton.style.display = "block";
+
+    count = 0;
     filmsContainer.innerHTML = "";
-    loadMoreButton.style.display = "none";
-    notFound.classList.remove("d-none");
-    return;
-  }
-
-  notFound.classList.add("d-none");
-  loadMoreButton.style.display = "block";
-
-  count = 0;
-  filmsContainer.innerHTML = "";
-  LoadMore();
-});
-
-const genreButtons = document.getElementById("genreButtons");
-
-function loadGenresCustom() {
-  let allGenres = new Set();
-
-  filmsDatas.forEach(f => f.genres?.forEach(g => allGenres.add(g)));
-
-  genreButtons.innerHTML = "";
-
-  allGenres.forEach(genre => {
-    genreButtons.innerHTML += `
-      <button class="genre-btn" data-genre="${genre}">${genre}</button>
-    `;
+    LoadMore();
   });
+} else {
+  console.warn("genreFilter not found in DOM — genre filtering disabled");
 }
-
-const filterBtn = document.getElementById("filterBtn");
-const filterPanel = document.getElementById("filterPanel");
-const filterClose = document.getElementById("filterClose");
-const overlay = document.getElementById("overlay");
-
-filterBtn.addEventListener("click", () => {
-  filterPanel.classList.add("open");
-  overlay.classList.add("active");
-});
-
-filterClose.addEventListener("click", () => {
-  filterPanel.classList.remove("open");
-  overlay.classList.remove("active");
-});
-
-overlay.addEventListener("click", () => {
-  filterPanel.classList.remove("open");
-  overlay.classList.remove("active");
-});
-
-genreButtons.addEventListener("click", (e) => {
-  if (!e.target.classList.contains("genre-btn")) return;
-
-  const selected = e.target.dataset.genre;
-
-  document.querySelectorAll(".genre-btn").forEach(btn =>
-    btn.classList.remove("active")
-  );
-
-  e.target.classList.add("active");
-
-  filteredFilms = filmsDatas.filter(f =>
-    f.genres.includes(selected)
-  );
-
-  count = 0;
-  filmsContainer.innerHTML = "";
-  LoadMore();
-
-  filterPanel.classList.remove("open");
-  overlay.classList.remove("active");
-});
